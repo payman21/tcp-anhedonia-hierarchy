@@ -1,0 +1,34 @@
+# Data and model outputs — not redistributed (see README)
+*.mat
+*.nii
+*.nii.gz
+*.dtseries.nii
+*.dlabel.nii
+*.dscalar.nii
+*.gii
+outputs/
+data/
+
+# Subject-level tables
+*.csv
+!environment.yml
+
+# MATLAB
+*.asv
+*.fig
+slprj/
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+.vscode/
+.claude/
+.Rhistory
+.RData
+.Rproj.user/

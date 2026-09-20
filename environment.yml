@@ -1,0 +1,20 @@
+name: tcp-anhedonia
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.10
+  - numpy
+  - scipy
+  - pandas
+  - matplotlib
+  - seaborn
+  - statsmodels
+  - scikit-learn
+  - nibabel
+  - jupyter
+  - pip
+  - pip:
+      - factor_analyzer
+      - semopy
+      - ptitprince
+      - palettable

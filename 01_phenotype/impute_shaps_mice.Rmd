@@ -1,0 +1,238 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-02-10"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(mice)
+library(dplyr)
+```
+
+```{r}
+setwd('/Users/proghani/Documents/personal/local_thesis_proj/TCP_data/my_analysis')
+```
+
+```{r}
+# Skip the first row and treat the second row as the header
+shaps_df <- read.csv("../../phenotype/shaps01.csv", header = TRUE, skip = 1, stringsAsFactors = FALSE)
+
+# Optionally, reset row names
+rownames(shaps_df) <- NULL
+
+```
+
+```{r}
+# Assuming 'subjectkey' is one of the columns in shaps_df
+subjectkeys <- shaps_df$subjectkey
+
+# Create a new data frame excluding the specified columns
+columns_to_exclude <- c('src_subject_id', 'sex', 'interview_date', 'interview_age', 'shaps_total', 
+                        "shaps_time_First_Click", "shaps_time_Last_Click", "shaps_time_Page_Submit", 
+                        "shaps_time_Click_Count", "qc_shaps_num_items", "qc_shaps_tot_num_nonresp")
+
+shaps_data <- shaps_df[, setdiff(names(shaps_df), columns_to_exclude)]
+```
+
+```{r}
+shaps_data[shaps_data == -9] <- NA
+
+```
+
+```{r}
+# Identify the binary columns (assume all columns except subjectkey are binary)
+binary_cols <- setdiff(names(shaps_data), "subjectkey")
+shaps_data[binary_cols] <- lapply(shaps_data[binary_cols], function(x) factor(x, levels = c(0, 1)))
+
+```
+
+```{r}
+# head(shaps_data)
+# Assuming your data frame is named df
+
+# Step 1: Select the relevant columns
+shaps_columns <- dplyr::select(shaps_data, shaps1:shaps14)
+
+# Step 2: Calculate the proportion of NA values in each row
+na_proportion <- rowSums(is.na(shaps_columns)) / ncol(shaps_columns)
+
+# Step 3: Filter rows where more than 60% of the values are NA
+rows_with_more_than_60_percent_na <- shaps_data[na_proportion > 0.6, ]
+
+# View the result
+print(rows_with_more_than_60_percent_na)
+
+```
+
+```{r}
+shaps_data_clean <- shaps_data[na_proportion <= 0.6, ]
+```
+
+```{r}
+# Create a method vector for your 14 binary columns (all using logistic regression)
+method_vector <- rep("logreg", ncol(shaps_data_clean))
+names(method_vector) <- names(shaps_data_clean)
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Run the imputation on the data without subjectkey
+imputed_data <- mice(shaps_data_clean, method = method_vector, m = 5)
+```
+```{r}
+# summary(imputed_data)
+```
+```{r}
+# This will produce trace plots for each variable across iterations.
+# plot(imputed_data)
+```
+```{r}
+# stripplot(imputed_data, pch = 20, cex = 1.2)
+
+```
+
+```{r}
+# Compare observed counts in the original data
+observed_counts <- table(shaps_data_clean$shaps1, useNA = "ifany")
+print("Observed counts for shaps1:")
+print(observed_counts)
+
+# Compare counts in one of the imputed datasets (e.g., the first one)
+imputed_shaps1 <- complete(imputed_data, action = 1)$shaps1
+imputed_counts <- table(imputed_shaps1)
+print("Imputed counts for shaps1 (from first imputed dataset):")
+print(imputed_counts)
+
+```
+```{r}
+# Function to calculate percentages
+calculate_percentages <- function(data) {
+  result <- data.frame(Variable = character(), 
+                       Percent_0_Original = numeric(), 
+                       Percent_1_Original = numeric(), 
+                       Percent_0_Imputed = numeric(), 
+                       Percent_1_Imputed = numeric(), 
+                       stringsAsFactors = FALSE)
+  
+  for (col in names(data)) {
+    counts <- table(data[[col]], useNA = "ifany")
+    total <- sum(counts)
+    percent_0 <- round(100 * (counts["0"] %||% 0) / total, 2)
+    percent_1 <- round(100 * (counts["1"] %||% 0) / total, 2)
+    
+    result <- rbind(result, data.frame(Variable = col, 
+                                       Percent_0_Original = percent_0, 
+                                       Percent_1_Original = percent_1,
+                                       Percent_0_Imputed = NA, 
+                                       Percent_1_Imputed = NA))
+  }
+  return(result)
+}
+
+# Helper to handle missing counts
+`%||%` <- function(a, b) if (!is.na(a)) a else b
+
+# Calculate percentages for original data
+original_percentages <- calculate_percentages(shaps_data_clean)
+
+# Get the first imputed dataset
+imputed_data_first <- complete(imputed_data, action = 1)
+
+# Calculate percentages for imputed data
+imputed_percentages <- calculate_percentages(imputed_data_first)
+
+# Merge the results
+final_result <- original_percentages
+final_result$Percent_0_Imputed <- imputed_percentages$Percent_0_Original
+final_result$Percent_1_Imputed <- imputed_percentages$Percent_1_Original
+
+# Display the final table
+print(final_result)
+```
+
+```{r}
+# Function to calculate percentages
+calculate_percentages <- function(data) {
+  result <- data.frame(Variable = character(), 
+                       Percent_0 = numeric(), 
+                       Percent_1 = numeric(), 
+                       stringsAsFactors = FALSE)
+  
+  for (col in names(data)) {
+    if (col != "subjectkey") {  # Ignore subjectkey column
+      counts <- table(data[[col]], useNA = "ifany")
+      total <- sum(counts)
+      percent_0 <- round(100 * (counts["0"] %||% 0) / total, 2)
+      percent_1 <- round(100 * (counts["1"] %||% 0) / total, 2)
+
+      result <- rbind(result, data.frame(Variable = col, 
+                                         Percent_0 = percent_0, 
+                                         Percent_1 = percent_1))
+    }
+  }
+  return(result)
+}
+
+# Helper to handle missing counts
+`%||%` <- function(a, b) if (!is.na(a)) a else b
+
+# Calculate percentages for original data
+original_percentages <- calculate_percentages(shaps_data_clean)
+
+# Initialize list to store differences and imputed datasets
+imputed_results <- list()
+differences <- numeric()
+
+# Loop through all 5 imputed datasets
+for (i in 1:5) {
+  imputed_data_i <- complete(imputed_data, action = i)
+  imputed_percentages <- calculate_percentages(imputed_data_i)
+
+  # Calculate absolute difference between original and imputed percentages
+  diff_0 <- abs(original_percentages$Percent_0 - imputed_percentages$Percent_0)
+  diff_1 <- abs(original_percentages$Percent_1 - imputed_percentages$Percent_1)
+  total_diff <- sum(diff_0 + diff_1)
+
+  # Store results
+  imputed_results[[i]] <- imputed_percentages
+  differences[i] <- total_diff
+}
+
+# Identify the imputed dataset with the smallest difference
+best_imputation_index <- which.min(differences)
+best_imputed_percentages <- imputed_results[[best_imputation_index]]
+
+# Prepare the final table
+final_result <- data.frame(
+  Variable = original_percentages$Variable,
+  Percent_0_Original = original_percentages$Percent_0,
+  Percent_1_Original = original_percentages$Percent_1,
+  Percent_0_Imputed = best_imputed_percentages$Percent_0,
+  Percent_1_Imputed = best_imputed_percentages$Percent_1
+)
+
+# Display the final table for the best performing imputed dataset
+cat(paste0("Best Performing Imputed Dataset: Imputation #", best_imputation_index, "\n"))
+print(final_result)
+
+```
+
+
+```{r}
+completed_data <- complete(imputed_data, action = 1)  # Extracting the first imputed dataset
+
+```
+
+```{r}
+# head(completed_data)
+class(completed_data)
+```
+
+```{r}
+write.csv(completed_data, file = "../phenotype/imputed/imputed_shaps01.csv", row.names = FALSE)
+```
+

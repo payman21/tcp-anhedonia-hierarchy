@@ -1,0 +1,169 @@
+---
+title: "teps01 Imputation with Subjectkey"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+knitr::opts_chunk$set(root.dir = "/Users/proghani/Documents/personal/local_thesis_proj/TCP_data/my_analysis")
+library(mice)
+library(dplyr)
+library(MASS)
+library(ggplot2)
+library(tidyr)
+```
+
+```{r}
+scale_df <- read.csv("../../phenotype/teps01.csv", header = TRUE, skip = 1, stringsAsFactors = FALSE)
+rownames(scale_df) <- NULL
+```
+
+
+```{r}
+# colnames(scale_df)
+head(scale_df)
+```
+
+```{r}
+# subjectkeys <- scale_df$subjectkey
+
+# Create a vector with the desired column names:
+columns_to_include <- c("subjectkey", paste0("teps", 1:18))
+
+# Subset the data frame to include only these columns:
+scale_data <- scale_df[, columns_to_include]
+```
+
+```{r}
+colnames(scale_data)
+```
+
+```{r}
+# Replace missing values with NA
+scale_data[scale_data == -300] <- NA
+```
+
+```{r}
+# Define the ordinal columns
+ordinal_cols <- paste0("teps", 1:18)
+
+# Convert these columns to ordered factors with levels 1 to 6
+scale_data[ordinal_cols] <- lapply(scale_data[ordinal_cols], function(x) {
+  factor(x, levels = 1:6, ordered = TRUE)
+})
+
+# # if one of the columns doesn't have all of the factor levels, run this:
+# scale_data[ordinal_cols] <- lapply(scale_data[ordinal_cols], function(x) {
+#   # Convert to ordered factor while keeping only observed levels
+#   factor(x, levels = sort(unique(na.omit(x))), ordered = TRUE)
+# })
+```
+
+```{r}
+# Step 1: Select the relevant columns
+scale_columns <- dplyr::select(scale_data, all_of(ordinal_cols))
+
+# Step 2: Calculate the proportion of NA values in each row
+na_proportion <- rowSums(is.na(scale_columns)) / ncol(scale_columns)
+
+# Step 3: Filter rows where more than 60% of the values are NA
+rows_with_more_than_60_percent_na <- scale_data[na_proportion > 0.6, ]
+
+# View the result
+print(rows_with_more_than_60_percent_na)
+```
+
+```{r}
+scale_data_clean <- scale_data[na_proportion <= 0.6, ]
+```
+
+```{r}
+# Count total number of NAs in the entire dataframe
+total_NAs <- sum(is.na(scale_data_clean))
+print(total_NAs)
+```
+
+```{r}
+# Your ordinal variable names
+ordinal_vars <- ordinal_cols
+
+# Create the method vector
+method_vector <- rep("logreg", ncol(scale_data_clean))
+names(method_vector) <- names(scale_data_clean)
+
+method_vector[ordinal_vars] <- "polr"  # Set ordinal variables to "polr"
+
+# Exclude 'subjectkey' - CORRECTED
+predictorMatrix <- matrix(1, nrow = ncol(scale_data_clean), ncol = ncol(scale_data_clean))
+diag(predictorMatrix) <- 0
+
+# Set row and column names of predictorMatrix to match data frame
+rownames(predictorMatrix) <- colnames(scale_data_clean)
+colnames(predictorMatrix) <- colnames(scale_data_clean)
+
+predictorMatrix["subjectkey", ] <- 0  
+predictorMatrix[, "subjectkey"] <- 0
+
+# Perform imputation
+set.seed(123)
+imputed_data <- mice(scale_data_clean, 
+                     method = method_vector, 
+                     m = 1,
+                     predictorMatrix = predictorMatrix)
+```
+
+```{r}
+imputed_first <- complete(imputed_data, 1)
+```
+
+```{r}
+library(tidyverse)
+
+# Define the BAPQ variable names
+scale_vars <- paste0("teps", 1:18)
+
+# Convert the original data to long format
+orig_long <- scale_data_clean[, scale_vars] %>%
+  pivot_longer(cols = everything(), names_to = "Scale_Variable", values_to = "Value") %>%
+  filter(!is.na(Value)) %>%
+  count(Scale_Variable, Value) %>%
+  mutate(Source = "Original")
+
+# Convert the imputed data to long format
+imp_long <- imputed_first[, scale_vars] %>%
+  pivot_longer(cols = everything(), names_to = "Scale_Variable", values_to = "Value") %>%
+  count(Scale_Variable, Value) %>%
+  mutate(Source = "Imputed")
+
+# Combine the counts
+combined_counts <- bind_rows(orig_long, imp_long)
+
+# Loop over each variable and create a separate plot
+for(var in unique(combined_counts$Scale_Variable)) {
+  p <- ggplot(filter(combined_counts, Scale_Variable == var),
+              aes(x = Value, y = n, fill = Source)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    labs(title = paste("Distribution of", var, "(Original vs. Imputed)"),
+         x = "Value",
+         y = "Count") +
+    theme_minimal()
+  
+  print(p)  # In RStudio, each plot will be rendered sequentially in the Plots pane.
+}
+
+```
+
+
+```{r}
+write.csv(imputed_first, file = "../../phenotype/imputed/imputed_teps01.csv", row.names = FALSE)
+```
+
+
+```{r}
+imputed_first
+```
+
+
