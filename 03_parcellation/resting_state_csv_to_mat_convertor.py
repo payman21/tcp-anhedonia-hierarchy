@@ -3,6 +3,10 @@ import pandas as pd
 import numpy as np
 from scipy.io import savemat
 
+import os, sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from config import TCP_DATA
+
 
 def process_cluster_folder(csv_folder_path, output_mat_file):
     """
@@ -148,7 +152,7 @@ def main():
     print("=" * 80)
 
     # Define the base path where the cluster folders are located
-    cluster_base_path = "/Users/proghani/Documents/personal/code_experiments/neuro/phd_stuff/tcp_parcellations/data/anhedonia/NEW_4_factor_clustering_ipnybV4"
+    cluster_base_path = f"{TCP_DATA}/anhedonia/NEW_4_factor_clustering_ipnybV4"
 
     # Define input folders (cluster_0 = high anhedonia, cluster_1 = low anhedonia)
     cluster_0_folder = os.path.join(cluster_base_path, "cluster_0")

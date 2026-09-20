@@ -76,10 +76,39 @@ Not redistributed here. The Schaefer-200 7-network and Tian Scale-II atlases are
 available from their original sources. The anatomical scaffold for the Hopf model is the
 normative connectome distributed with [Lead-DBS](https://www.lead-dbs.org/).
 
-## Paths
+## Configuration
 
-Scripts currently reference absolute local paths for the source data, atlases and
-structural connectome. Set these to your own locations before running.
+No absolute paths are hard-coded. All filesystem locations live in two files at the
+repository root, `config.py` (Python) and `config.m` (MATLAB), and each can be overridden
+by an environment variable.
+
+| Variable | What it points at |
+|---|---|
+| `TCP_DATA` | `tcp_parcellations/data` — parcellated time series, atlases, structural connectome, cluster `.mat` files |
+| `TCP_PHENO` | MICE-imputed item-level questionnaire tables (stage 01 output) |
+| `TCP_GEC` | Stage 04 MATLAB outputs and the demographics table |
+| `TCP_PROJ` | Project root, for demographics and supplementary inputs |
+| `TCP_FIGS` | Where figures are written |
+| `TCP_RENDER_UTILS` | Third-party MATLAB rendering toolboxes (stage 06) |
+
+R scripts in stage 01 read `TCP_PHENO_RAW` for the directory holding the raw phenotype CSVs.
+
+Notebooks pick this up with a bootstrap cell at the top:
+
+```python
+import os, sys
+sys.path.insert(0, os.path.abspath('..'))   # repo root
+from config import TCP_DATA, PHENO, GEC, PROJ, FIGS
+```
+
+MATLAB scripts call `cfg = config();` and read `cfg.TCP_DATA`, `cfg.CLUSTERS`, `cfg.SC_FILE`,
+`cfg.OUTPUT` and `cfg.RENDER_UTILS`.
+
+## Notebook state
+
+Notebooks are stored without executed outputs. Stages 01 through 04 can be run from the TCP
+source data; stage 05 additionally requires the stage-04 GEC matrices, which are not
+redistributed here.
 
 ## License
 

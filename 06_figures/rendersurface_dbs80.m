@@ -1,4 +1,5 @@
 function rendersurface_dbs80(dbs80vector,rangemin,rangemax, inv,clmap,surfacetype)
+cfg = config();
 % script for rendering a dbs80 vector
 %   ML Kringelbach June 2020
 %
@@ -18,9 +19,9 @@ function rendersurface_dbs80(dbs80vector,rangemin,rangemax, inv,clmap,surfacetyp
 %  2 inflated (default)
 %  3 very inflated
 %addpath('D:\Irene\Trophic_soldiers\Scripts\renders\render_utils\gifti-main\')
-addpath('/media/irene/D450-97BC/Irene/Trophic_soldiers/Scripts/renders/render_utils/gifti-main/')
+addpath(fullfile(cfg.RENDER_UTILS, 'gifti-main'))
 %addpath('D:\Irene\Trophic_soldiers\Scripts\renders\render_utils\xmltree-main\')
-addpath('/media/irene/D450-97BC/Irene/Trophic_soldiers/Scripts/renders/render_utils/xmltree-main/')
+addpath(fullfile(cfg.RENDER_UTILS, 'xmltree-main'))
 
 
 if ~exist('rangemin','var')
@@ -45,21 +46,21 @@ end
 disp(rangemin)
 disp(rangemax)
 %addpath('D:\Irene\Trophic_soldiers\Scripts\renders\render_utils\subtightplot')
-addpath('/media/irene/D450-97BC/Irene/Trophic_soldiers/Scripts/renders/render_utils/subtightplot')
+addpath(fullfile(cfg.RENDER_UTILS, 'subtightplot'))
 %addpath('D:\Irene\Trophic_soldiers\Scripts\renders\render_utils\othercolor')
-addpath('/media/irene/D450-97BC/Irene/Trophic_soldiers/Scripts/renders/render_utils/othercolor')
+addpath(fullfile(cfg.RENDER_UTILS, 'othercolor'))
 % make space tight
 make_it_tight = true;
 subplot = @(m,n,p) subtightplot (m, n, p, [0.01 0.05], [0.1 0.01], [0.1 0.01]);
 if ~make_it_tight,  clear subplot;  end
 
 % load the different views
-% base='/Users/mortenk/Documents/MATLAB/osl/std_masks/';
+% (was a local OSL std_masks path on a collaborator's machine)
 % display_surf_left=gifti([base 'ParcellationPilot.L.inflated.32k_fs_LR.surf.gii']);
 % display_surf_right=gifti([base 'ParcellationPilot.R.inflated.32k_fs_LR.surf.gii']);
 
 %basedir='D:\Irene\Trophic_soldiers\Scripts\renders\render_utils\';
-basedir='/media/irene/D450-97BC/Irene/Trophic_soldiers/Scripts/renders/render_utils/';
+basedir=cfg.RENDER_UTILS;
 glassers_L=gifti([basedir 'Glasser360.L.mid.32k_fs_LR.surf.gii']);
 glassersi_L=gifti([basedir 'Glasser360.L.inflated.32k_fs_LR.surf.gii']);
 glassersvi_L=gifti([basedir 'Glasser360.L.very_inflated.32k_fs_LR.surf.gii']);
@@ -87,7 +88,7 @@ sr = display_surf_right;
 
 
 %base='D:\Irene\Trophic_soldiers\Scripts\renders\render_utils\';
-base='/media/irene/D450-97BC/Irene/Trophic_soldiers/Scripts/renders/render_utils/';
+base=cfg.RENDER_UTILS;
 % label gifti
 label_L=gifti([base 'fsaverage.L.dbs80_Atlas.32k_fs_LR.label.gii']);
 label_R=gifti([base 'fsaverage.R.dbs80_Atlas.32k_fs_LR.label.gii']);
