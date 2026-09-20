@@ -1,6 +1,6 @@
 # Directed brain hierarchy and transdiagnostic anhedonia
 
-Analysis code for the manuscript *"[Manuscript title]"*.
+Analysis code for the manuscript *"Loss of ascending drive shifts the cortico-subcortical hierarchy toward top-down dominance in transdiagnostic anhedonia"*.
 
 This repository contains the custom code used to derive transdiagnostic anhedonia
 subgroups, estimate subject-level generative effective connectivity (GEC) from
