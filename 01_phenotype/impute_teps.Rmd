@@ -8,7 +8,10 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-knitr::opts_chunk$set(root.dir = "/Users/proghani/Documents/personal/local_thesis_proj/TCP_data/my_analysis")
+# Set this to the directory holding the raw phenotype CSVs.
+# Override with:  Sys.setenv(TCP_PHENO_RAW = "/path/to/phenotype")
+pheno_dir <- Sys.getenv("TCP_PHENO_RAW", unset = "/path/to/phenotype")
+knitr::opts_knit$set(root.dir = pheno_dir)
 library(mice)
 library(dplyr)
 library(MASS)

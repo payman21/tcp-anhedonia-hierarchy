@@ -3,13 +3,17 @@ import shutil
 import pandas as pd
 from pathlib import Path
 
+import os, sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from config import TCP_DATA
+
 # Use absolute path to phenotype file
-cluster_df = pd.read_csv('/Users/proghani/Documents/personal/code_experiments/neuro/phd_stuff/tcp_parcellations/data/anhedonia/NEW_4_factor_clustering_ipnybV4/anhedonia_polychoric_gmm_clusters.csv')
+cluster_df = pd.read_csv(f'{TCP_DATA}/anhedonia/NEW_4_factor_clustering_ipnybV4/anhedonia_polychoric_gmm_clusters.csv')
 
 # Define directories
-source_dir = Path('/Users/proghani/Documents/personal/code_experiments/neuro/phd_stuff/tcp_parcellations/data/parcellated_rsfmri')
-cluster_0_dir = Path('/Users/proghani/Documents/personal/code_experiments/neuro/phd_stuff/tcp_parcellations/data/anhedonia/NEW_4_factor_clustering_ipnybV4/cluster_0')
-cluster_1_dir = Path('/Users/proghani/Documents/personal/code_experiments/neuro/phd_stuff/tcp_parcellations/data/anhedonia/NEW_4_factor_clustering_ipnybV4/cluster_1')
+source_dir = Path(f'{TCP_DATA}/parcellated_rsfmri')
+cluster_0_dir = Path(f'{TCP_DATA}/anhedonia/NEW_4_factor_clustering_ipnybV4/cluster_0')
+cluster_1_dir = Path(f'{TCP_DATA}/anhedonia/NEW_4_factor_clustering_ipnybV4/cluster_1')
 
 # Create output directories if they don't exist
 cluster_0_dir.mkdir(parents=True, exist_ok=True)

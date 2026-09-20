@@ -1,10 +1,11 @@
-% this is the modified code to perform the torphic levels analysis using
-% clusters that were created using only SHAPS (no factor analysis)
+% Computes the per-region peak BOLD frequency vector (f_diff) for each
+% anhedonia group. Run this before estimate_gec_trophic.m.
 clear all;
 
 % Paths
-data_dir = '/Users/proghani/Documents/personal/code_experiments/neuro/phd_stuff/tcp_parcellations/data/anhedonia/NEW_4_factor_clustering_ipnybV4';
-output_dir = '/Users/proghani/Documents/personal/local_thesis_proj/TCP_thesis_project/my_analysis/trophic_coherence_analysis/outputs/NEW_4_factor_clustering_ipnybV4';
+cfg = config();
+data_dir = cfg.CLUSTERS;
+output_dir = cfg.OUTPUT;
 if ~exist(output_dir, 'dir')
     mkdir(output_dir);
 end

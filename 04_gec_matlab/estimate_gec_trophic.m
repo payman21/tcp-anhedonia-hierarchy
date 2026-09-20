@@ -13,7 +13,7 @@
 
 clear all
 % Set up output directories
-output_dir = 'outputs/NEW_4_factor_clustering_ipnybV4/';
+output_dir = [cfg.OUTPUT filesep];
 output_low_dir = fullfile(output_dir, 'low_anhedonia/');
 output_high_dir = fullfile(output_dir, 'high_anhedonia/');
 
@@ -24,11 +24,12 @@ if ~exist(output_high_dir, 'dir'), mkdir(output_high_dir); end
 
 % Load Data
 % (Update paths as needed)
-load('/Users/proghani/Documents/personal/code_experiments/neuro/phd_stuff/tcp_parcellations/data/sc_matrix/SC_schaefer200_tian_S2_7Networks_32fold_groupconnectome_3T_MNI152NLin2009cAsym_2mm.mat');
+cfg = config();
+load(cfg.SC_FILE);
 C = SC; 
 
-load('/Users/proghani/Documents/personal/code_experiments/neuro/phd_stuff/tcp_parcellations/data/anhedonia/NEW_4_factor_clustering_ipnybV4/low_anhedonia.mat');
-load('/Users/proghani/Documents/personal/code_experiments/neuro/phd_stuff/tcp_parcellations/data/anhedonia/NEW_4_factor_clustering_ipnybV4/high_anhedonia.mat');
+load(fullfile(cfg.CLUSTERS, 'low_anhedonia.mat'));
+load(fullfile(cfg.CLUSTERS, 'high_anhedonia.mat'));
 
 load(fullfile(output_dir, 'empirical_low_anhedonia.mat'));
 f_diff_low = f_diff;
