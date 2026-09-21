@@ -9,9 +9,12 @@
 outputs/
 data/
 
-# Subject-level tables
+# Subject-level tables are never committed. Under the NIMH Data Archive Data Use
+# Certification governing these data, subject-level derived data may not be
+# redistributed. Group-level summaries carry no such restriction and are tracked.
 *.csv
 !environment.yml
+!group_level_data/*.csv
 
 # MATLAB
 *.asv

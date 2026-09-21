@@ -14,10 +14,18 @@ https://doi.org/10.15154/w59r-ef41), distributed through the NIMH Data Archive
 within NDA Collection 3552. The data are available to qualified investigators who
 hold an executed NDA Data Use Certification. No participant data are redistributed here.
 
-This repository is **code only**. In particular, the subject-level GEC matrices
-produced by stage 4 are not included, because of their size (~190 MB); they are
-available from the corresponding author on reasonable request. Stages 1–4 can be run
-from the TCP source data; stage 5 requires the stage-4 outputs.
+Subject-level derived data are **not** redistributed here. The NIMH Data Archive Data Use
+Certification governing access to the source data does not permit redistribution of
+subject-level derived quantities, which includes the per-subject GEC matrices produced by
+stage 4. Investigators who obtain their own executed Data Use Certification can regenerate
+them from the source data with this code.
+
+Group-level derivatives carry no such restriction and **are** included, in
+[`group_level_data/`](group_level_data/) — the group-level GEC matrices, per-region trophic
+levels averaged within each group, and the summary measures. These are enough to inspect and
+verify the reported results without access to the source data.
+
+Stages 1–4 can be run from the TCP source data; stage 5 requires the stage-4 outputs.
 
 ## Pipeline
 
