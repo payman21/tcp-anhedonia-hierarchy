@@ -9,6 +9,7 @@ here or by exporting the matching environment variable.
     export TCP_GEC=/path/to/trophic_coherence_analysis
     export TCP_PROJ=/path/to/TCP_thesis_project
     export TCP_FIGS=/path/to/figure/output
+    export TCP_SPLIT_HALF=/path/to/split_half/results
 """
 import os
 
@@ -27,6 +28,17 @@ PROJ = os.environ.get("TCP_PROJ", "/path/to/TCP_thesis_project")
 # Where figures are written
 FIGS = os.environ.get("TCP_FIGS", "./figures")
 
+# Subject-level split-half GEC fits written by 07_revision_analyses (never committed)
+SPLIT_HALF = os.environ.get("TCP_SPLIT_HALF", os.path.join(GEC, "outputs", "split_half"))
+
 ATLAS_LABELS = os.path.join(
     TCP_DATA, "atlases",
     "Schaefer2018_200Parcels_7Networks_order_Tian_Subcortex_S2_label.txt")
+
+# Derived locations, matching config.m
+CLUSTERS = os.path.join(TCP_DATA, "anhedonia", "NEW_4_factor_clustering_ipnybV4")
+SC_FILE = os.path.join(
+    TCP_DATA, "sc_matrix",
+    "SC_schaefer200_tian_S2_7Networks_32fold_groupconnectome_3T_MNI152NLin2009cAsym_2mm.mat")
+GEC_OUTPUT = os.path.join(GEC, "outputs", "NEW_4_factor_clustering_ipnybV4")
+DEMOS = os.path.join(GEC, "data", "demos_payman.xls")

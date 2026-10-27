@@ -13,6 +13,7 @@ data/
 # Certification governing these data, subject-level derived data may not be
 # redistributed. Group-level summaries carry no such restriction and are tracked.
 *.csv
+*.npz
 !environment.yml
 !group_level_data/*.csv
 

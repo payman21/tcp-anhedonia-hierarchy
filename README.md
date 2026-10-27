@@ -1,6 +1,6 @@
 # Directed brain hierarchy and transdiagnostic anhedonia
 
-Analysis code for the manuscript *"Loss of ascending drive shifts the cortico-subcortical hierarchy toward top-down dominance in transdiagnostic anhedonia"*.
+Analysis code for the manuscript *"Diminished ascending drive in transdiagnostic anhedonia shifts the cortico-subcortical hierarchy away from bottom-up dominance"*.
 
 This repository contains the custom code used to derive transdiagnostic anhedonia
 subgroups, estimate subject-level generative effective connectivity (GEC) from
@@ -9,9 +9,9 @@ every statistic and figure reported in the paper.
 
 ## Data
 
-Analyses use the **Transdiagnostic Connectome Project** (TCP; NDA Study #3397,
-https://doi.org/10.15154/w59r-ef41), distributed through the NIMH Data Archive
-within NDA Collection 3552. The data are available to qualified investigators who
+Analyses use the **Transdiagnostic Connectome Project** (TCP), distributed through the
+NIMH Data Archive within NDA Collection 3552. The subset of participants and data analysed
+here is recorded as NDA Study #3397 (https://doi.org/10.15154/w59r-ef41). The data are available to qualified investigators who
 hold an executed NDA Data Use Certification. No participant data are redistributed here.
 
 Subject-level derived data are **not** redistributed here. The NIMH Data Archive Data Use
@@ -25,7 +25,7 @@ Group-level derivatives carry no such restriction and **are** included, in
 levels averaged within each group, and the summary measures. These are enough to inspect and
 verify the reported results without access to the source data.
 
-Stages 1–4 can be run from the TCP source data; stage 5 requires the stage-4 outputs.
+Stages 1–4 can be run from the TCP source data; stages 5 and 7 require the stage-4 outputs.
 
 ## Pipeline
 
@@ -39,6 +39,7 @@ Stages run in order. Each consumes the previous stage's output.
 | `04_gec_matlab/` | MATLAB | Hopf whole-brain model fitting. Estimates each subject's directed GEC matrix against empirical FC and time-shifted covariance, then computes trophic levels and trophic coherence. |
 | `05_analysis/` | Python | Covariate-adjusted OLS models, cortico-subcortical and frontostriatal flow asymmetry, dimensional severity correlations, tiered BH-FDR correction, and the undirected functional-connectivity control analysis. |
 | `06_figures/` | Python / MATLAB | Cortical and subcortical surface renderings of regional trophic levels. |
+| `07_revision_analyses/` | Python | Split-half GEC refits and reliability, covariate-adjusted group means and effect sizes, and the gap–flow identity. |
 
 ### Stage detail
 
@@ -57,6 +58,20 @@ The latter fits a group-level solution first, then seeds each subject's fit from
 
 **05_analysis** — `trophic_levels_main_analysis.ipynb` is the main post-analysis notebook.
 `multiple_comparisons_fdr.ipynb` implements the tiered FDR scheme described in the Methods.
+
+**07_revision_analyses** — analyses added in revision. Run from inside the folder.
+- `hopf_lna.py` is a Python port of the stage-04 MATLAB GEC fit, with the same settings. It is
+  used only for the split-half refits; the main GEC matrices come from the MATLAB code.
+- `run_split_half.py` refits each participant's GEC separately on run 1 (AP + PA) and run 2
+  (AP + PA), seeded from the stage-04 group solution. Fits are written to `TCP_SPLIT_HALF`.
+  It is resumable; `python run_split_half.py [n_per_group] [workers]`.
+- `split_half_reliability.py` produces Supplementary Table 5 (Pearson r, Spearman–Brown,
+  ICC(A,1), and the group effect within each half). `analyze_split_half.py` adds the
+  reliability of the two cortico-subcortical flow arms.
+- `adjusted_means_effect_sizes.py` gives the covariate-adjusted group means tested against zero
+  and the effect sizes d reported for the compartment-level measures.
+- `gap_flow_identity.py` checks the identity linking the cortex–subcortex gap to the flow index
+  (Supplementary Methods 2).
 
 ## Requirements
 
@@ -98,6 +113,7 @@ by an environment variable.
 | `TCP_PROJ` | Project root, for demographics and supplementary inputs |
 | `TCP_FIGS` | Where figures are written |
 | `TCP_RENDER_UTILS` | Third-party MATLAB rendering toolboxes (stage 06) |
+| `TCP_SPLIT_HALF` | Subject-level split-half GEC fits (stage 07 output; defaults to `$TCP_GEC/outputs/split_half`) |
 
 R scripts in stage 01 read `TCP_PHENO_RAW` for the directory holding the raw phenotype CSVs.
 
@@ -115,7 +131,7 @@ MATLAB scripts call `cfg = config();` and read `cfg.TCP_DATA`, `cfg.CLUSTERS`, `
 ## Notebook state
 
 Notebooks are stored without executed outputs. Stages 01 through 04 can be run from the TCP
-source data; stage 05 additionally requires the stage-04 GEC matrices, which are not
+source data; stages 05 and 07 additionally require the stage-04 GEC matrices, which are not
 redistributed here.
 
 ## License
