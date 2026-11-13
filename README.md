@@ -7,6 +7,18 @@ subgroups, estimate subject-level generative effective connectivity (GEC) from
 resting-state fMRI, decompose that connectivity into trophic levels, and produce
 every statistic and figure reported in the paper.
 
+**Quick start for reviewers.** The source data are access-controlled (see [Data](#data)), so
+the full pipeline cannot be run without an NDA Data Use Certification. The [Demo](#demo)
+runs in seconds on the group-level data included in [`group_level_data/`](group_level_data/).
+
+| Folder | Contents |
+|---|---|
+| `01_phenotype/` – `07_revision_analyses/` | The analysis pipeline, one folder per stage (see [Pipeline](#pipeline)) |
+| `demo/` | Demo script that runs on the included group-level data |
+| `group_level_data/` | Group-level GEC matrices, trophic levels and summary measures |
+| `config.py`, `config.m` | All filesystem paths (see [Configuration](#configuration)) |
+| `environment.yml` | Python environment |
+
 ## Data
 
 Analyses use the **Transdiagnostic Connectome Project** (TCP), distributed through the
@@ -79,7 +91,7 @@ The latter fits a group-level solution first, then seeds each subject's fit from
 scikit-learn, nibabel, factor_analyzer, semopy, ptitprince, palettable.
 See `environment.yml`.
 
-**R** ≥ 4.2 — mice, dplyr, tidyr, tidyverse, ggplot2, MASS.
+**R** ≥ 4.2 — mice, dplyr, tidyr, tidyverse, ggplot2, MASS; knitr and rmarkdown to knit the `.Rmd` scripts.
 
 **MATLAB** — R2021b or later, with the Parallel Computing Toolbox (the subject loops use
 `parfor`) and the Statistics and Machine Learning Toolbox (`ranksum`).
@@ -98,6 +110,73 @@ MATLAB path for stage 6.
 Not redistributed here. The Schaefer-200 7-network and Tian Scale-II atlases are publicly
 available from their original sources. The anatomical scaffold for the Hopf model is the
 normative connectome distributed with [Lead-DBS](https://www.lead-dbs.org/).
+
+### Tested on
+
+macOS 27.0.1 (MacBook Pro, Apple M2 Max, 64 GB RAM), with Python 3.12.9, R 4.4.2
+(RStudio 2024.12.1) and MATLAB R2024b.
+
+### Hardware
+
+The demo and stages 01, 02, 05 and 07 (except the split-half refits) run on a standard
+desktop computer. Stage 04 fits the Hopf model for 210 participants and is
+compute-intensive; it took about 6 hours on a 12-core Apple M2 Max laptop using `parfor`.
+No GPU or other non-standard hardware is required.
+
+## Installation
+
+```bash
+git clone https://github.com/payman21/tcp-anhedonia-hierarchy.git
+cd tcp-anhedonia-hierarchy
+conda env create -f environment.yml
+conda activate tcp-anhedonia
+```
+
+Install the R packages from an R session:
+
+```r
+install.packages(c("mice", "dplyr", "tidyr", "tidyverse", "ggplot2", "MASS", "knitr", "rmarkdown"))
+```
+
+MATLAB and its toolboxes are installed separately. Typical install time on a normal desktop
+computer is about 10–15 minutes, most of it creating the conda environment.
+
+## Demo
+
+The demo runs on the group-level data in `group_level_data/` and needs no access to the
+TCP source data. It recomputes trophic levels and trophic coherence from the two group-level
+GEC matrices, using a Python port of `compute_hierarchy()` in
+`04_gec_matlab/estimate_gec_trophic.m`, and summarises the cortico-subcortical hierarchy.
+Applied to the subject-level GEC matrices, the port reproduces the MATLAB trophic levels and
+coherence to within 2 × 10⁻⁵.
+
+From the repository root, with the conda environment active:
+
+```bash
+python demo/demo_trophic_levels.py
+```
+
+Expected output:
+
+```
+group   coherence   cortex  subcortex      gap  flow index
+low       -0.0081   0.1779     0.1507   0.0272     -0.0314
+high      -0.0064   0.1078     0.1129  -0.0051     -0.0014
+
+Subject-averaged regional levels (high - low): cortex -0.0314, subcortex -0.0068
+```
+
+Columns are trophic coherence, mean trophic level of cortex and of subcortex, the gap
+between them (cortex − subcortex), and the flow-asymmetry index (*A* − *B*) / (*A* + *B*),
+where *A* is the total cortex → subcortex weight and *B* the subcortex → cortex weight, so
+negative values indicate net bottom-up flow. In the high-anhedonia group the cortex sits
+lower in the hierarchy, the cortex–subcortex gap closes, and the flow index moves towards
+zero, away from bottom-up dominance. The last line reads the subject-averaged regional
+levels from `regional_trophic_levels_group_means.csv`, and shows that cortical levels drop
+much more than subcortical levels. The statistics in the paper are computed on the
+subject-level GEC matrices, so the group-matrix values above are not identical to them.
+
+Expected run time on a normal desktop computer: under 15 seconds.
 
 ## Configuration
 
